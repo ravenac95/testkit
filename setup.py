@@ -17,7 +17,9 @@ setup(name='testkit',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
-    install_requires=[],
+    install_requires=[
+        'fudge',
+    ],
     entry_points={},
     classifiers=[
         'License :: OSI Approved :: MIT License',
