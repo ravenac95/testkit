@@ -10,3 +10,9 @@ Features
 
 - Provides a way to use context managers in setup/teardown of a test
 - Provides a context manager for temporary directories
+- Provides a way to create shunts via fudge
+
+TODO
+----
+
+- Add docs
