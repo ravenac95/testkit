@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-VERSION = '0.0.1-dev'
+VERSION = '0.1.0'
 
 LONG_DESCRIPTION = open('README.rst').read()
 
@@ -13,7 +13,7 @@ setup(name='testkit',
     author_email='reuven@tobetter.us',
     url="https://github.com/ravenac95/testkit",
     license='MIT',
-    platforms='Ubuntu',
+    platforms='Unix',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,

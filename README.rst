@@ -16,3 +16,18 @@ TODO
 ----
 
 - Add docs
+
+Developing
+----------
+
+Install virtstrap via pip. Please install this system wide::
+    
+    $ pip install virtstrap
+
+Then cd to the project's root directory and do the following::
+    
+    $ vstrap init
+
+You can then activate the virtualenv::
+    
+    $ . quickactivate
