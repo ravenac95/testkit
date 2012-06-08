@@ -45,20 +45,6 @@ def test_temp_directory_raises_error():
     assert raised_error
     assert not os.path.exists(temp_dir)
 
-def test_context_user():
-    from contextlib import contextmanager
-    test_dict = dict(value='before')
-    @contextmanager
-    def test_context(test_dict):
-        test_dict['value'] = 'during'
-        yield 'test'
-        test_dict['value'] = 'after'
-    ctx = ContextUser(test_context(test_dict))
-    assert test_dict['value'] == 'before'
-    ctx.enter()
-    assert test_dict['value'] == 'during'
-    ctx.exit()
-    assert test_dict['value'] == 'after'
 
 @fudge.test
 def test_shunt_mixin():
