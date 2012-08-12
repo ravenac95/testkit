@@ -1,6 +1,6 @@
 import time
 from nose.tools import raises
-from testkit.timeout import timeout
+from testkit.timeouts import timeout
 
 
 @raises(AssertionError)
@@ -14,3 +14,8 @@ def test_timeout():
 def test_timeout_with_infinite_loop():
     while True:
         time.sleep(0.001)
+
+
+@timeout(0.5)
+def test_timeout_no_errors():
+    print "nothing"

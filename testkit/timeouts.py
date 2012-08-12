@@ -1,14 +1,13 @@
 import multiprocessing
 import Queue
-import sys
-import os
 from functools import wraps
 from .exceptionutils import store_any_exception
 
 
 def monitoring_wrapper(queue, monitored_func, args, kwargs):
     exception_info = store_any_exception(monitored_func, args, kwargs)
-    queue.put(exception_info)
+    if exception_info:
+        queue.put(exception_info)
 
 
 def terminate_process(process):
