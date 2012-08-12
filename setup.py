@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 
 LONG_DESCRIPTION = open('README.rst').read()
 
@@ -26,6 +26,5 @@ setup(name='testkit',
         'Intended Audience :: Developers',
         'Programming Language :: Python',
         'Operating System :: POSIX',
-        'Programming Language :: Python',
     ],
 )
