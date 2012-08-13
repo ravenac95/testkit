@@ -75,20 +75,21 @@ class PicklableTracebackData(object):
     def from_traceback(cls, tb):
         frame = tb.tb_frame
         code = frame.f_code
+        code_filename = code.co_filename
         lineno = tb.tb_lineno
-        return cls(code, lineno)
+        return cls(code_filename, lineno)
 
-    def __init__(self, code, lineno):
-        self._code = code
+    def __init__(self, code_filename, lineno):
+        self._code_filename = code_filename
         self._lineno = lineno
 
     def create_exc_info(self, exc_type, exc_value):
-        code = self._code
+        code_filename = self._code_filename
         fake_code = compile('\n' * (self._lineno - 1) + raise_helper,
-                code.co_filename, 'exec')
+                code_filename, 'exec')
         tb_globals = {
-            '__name__': code.co_filename,
-            '__file__': code.co_filename,
+            '__name__': code_filename,
+            '__file__': code_filename,
             '__internal_exception__': (exc_type, exc_value),
         }
         tb_locals = {}

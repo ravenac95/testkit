@@ -18,4 +18,4 @@ def test_timeout_with_infinite_loop():
 
 @timeout(0.5)
 def test_timeout_no_errors():
-    print "nothing"
+    pass

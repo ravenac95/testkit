@@ -1,4 +1,5 @@
 fudge (fudge==1.0.3)
-mock (mock==1.0b1)
 nose (nose==1.1.2)
 ipython (ipython==0.12.1)
+mock (mock==1.0b1)
+pyzmq (pyzmq==2.2.0)

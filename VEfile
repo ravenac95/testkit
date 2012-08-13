@@ -8,3 +8,4 @@ requirements:
   - nose
   - ipython
   - mock
+  - pyzmq # Include pyzmq for processes testing
