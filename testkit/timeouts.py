@@ -15,6 +15,10 @@ def terminate_process(process):
         process.terminate()
 
 
+class TimeoutError(AssertionError):
+    pass
+
+
 class TimeoutDecorator(object):
     """A Decorator that will timeout a method or function by running it in a
     separate process
@@ -43,7 +47,7 @@ class TimeoutDecorator(object):
             process.join(self._limit)
             if process.is_alive():
                 terminate_process(process)
-                raise AssertionError('Test timed out')
+                raise TimeoutError('Test timed out')
             try:
                 exception_info = queue.get(block=False)
             except Queue.Empty:

@@ -1,6 +1,7 @@
 import time
 import zmq
-from nose.tools import raises, eq_, istest
+from collections import deque
+from nose.tools import raises, eq_
 from testkit.processes import *
 
 
@@ -22,7 +23,6 @@ class ZMQProcess(ProcessWrapper):
         context = zmq.Context()
         server_socket = context.socket(self.socket_type)
         server_uri = self.initial_options.get('server_uri')
-        print server_uri
         if server_uri:
             server_socket.bind(server_uri)
         else:
@@ -39,6 +39,19 @@ class EchoServerProcess(ZMQProcess):
         while True:
             msg = self.server_socket.recv()
             self.server_socket.send(msg)
+
+
+class PubServerProcess(ZMQProcess):
+    socket_type = zmq.PUB
+
+    def setup(self, shared_options):
+        self.msg_prefix = shared_options['msg_prefix']
+        self.messages = shared_options['messages']
+
+    def run(self):
+        msg_prefix = self.msg_prefix
+        for message in self.messages:
+            self.server_socket.send_multipart([msg_prefix, message])
 
 
 class ServerThatHangs(ZMQProcess):
@@ -132,33 +145,26 @@ def test_with_server_that_hangs(initial, shared):
     socket.recv()
 
 
-class TestWithClassSetup(object):
-    def setup(self):
+class TestWithMethodAsDescriptor(MultiprocessTest):
+    wrappers = [PubServerProcess]
+
+    def shared_options(self):
+        import random
+        random_char = random.choice('abcdefghijklmnopqrstuvwxyz')
+        self.msg_prefix = 'someprefix-%s' % random_char
+        self.messages = ['a', 'b', 'c', 'd']
+        return {'msg_prefix': self.msg_prefix,
+                'messages': self.messages}
+
+    def setup(self, shared_options):
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect('tcp://127.0.0.1:5432')
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.setsockopt(zmq.SUBSCRIBE, self.msg_prefix)
+        self.socket.connect(shared_options['server_uri'])
 
-    def in_process_setup(self):
-        pass
-
-    @multiprocess([EchoServerProcess],
-            lambda: {'server_uri': 'tcp://127.0.0.1:5432'},
-            limit=3.0)
-    def test_with_echo_server(self, initial, shared):
-        context = zmq.Context()
-        socket = context.socket(zmq.REQ)
-        socket.connect(shared['server_uri'])
-
-        socket.send('hello')
-        eq_(socket.recv(), 'hello')
-
-        socket.send('world')
-        eq_(socket.recv(), 'world')
-
-
-class TestWithMethodAsDescriptor(object):
-    wrappers = [EchoServerProcess]
-
-    @multiprocess_method(3.0)
-    def test_what(self):
-        assert 1 == 2
+    def test_sub_receives_messages(self):
+        message_queue = deque(self.messages)
+        msg_prefix = self.msg_prefix
+        while message_queue:
+            expected = message_queue.popleft()
+            eq_(self.socket.recv_multipart(), [msg_prefix, expected])
