@@ -48,7 +48,8 @@ class ProcessWrapper(object):
         """Run the processes three stages"""
         try:
             options = self.shared_options()
-            self._options_queue.put(options)
+            options_copy = options.copy()
+            self._options_queue.put(options_copy)
             shared_options = self._shared_options_queue.get()
             self.setup(shared_options)
             self._process_ready_event.set()
@@ -72,6 +73,10 @@ class ProcessWrapper(object):
 def start_process(wrapper_cls, *args, **kwargs):
     wrapper = wrapper_cls(*args, **kwargs)
     wrapper.run_process()
+
+
+class ProcessError(Exception):
+    pass
 
 
 class ProcessMonitor(object):
@@ -113,6 +118,8 @@ class ProcessMonitor(object):
         try:
             queue.put(data, timeout=self._timeout)
         except Queue.Full:
+            print self.is_alive()
+            self.check_for_exceptions()
             raise ProcessTimedOut(error)
 
     def _receive_from_queue(self, queue):
@@ -120,6 +127,8 @@ class ProcessMonitor(object):
         try:
             data = queue.get(timeout=self._timeout)
         except Queue.Empty:
+            print self.is_alive()
+            self.check_for_exceptions()
             raise ProcessTimedOut(error)
         return data
 
@@ -146,12 +155,20 @@ class ProcessMonitor(object):
         try:
             exception_info = self._exception_queue.get(block=False)
         except Queue.Empty:
-            pass
+            # Check for any non-zero exit codes
+            exit_code = self.exitcode
+            if exit_code != 0:
+                raise ProcessError('Process "%s" exited with error '
+                        'code "%d"' % (self.name, self.exitcode))
         else:
             exception_info.reraise()
 
     def is_alive(self):
         return self._process.is_alive()
+
+    @property
+    def exitcode(self):
+        return self._process.exitcode
 
     def terminate(self):
         while self._process.is_alive():
@@ -186,6 +203,10 @@ class ProcessManager(object):
             for wrapper_cls in self._wrappers:
                 monitor = ProcessMonitor.new_process(wrapper_cls,
                     self._initial_options, timeout=self._timeout)
+                print "%s ALIVE TO START? %s" % (monitor.name, monitor.is_alive())
+                time.sleep(0.25)
+                print "%s ALIVE NOW? %s %s" % (monitor.name, monitor.is_alive(),
+                        monitor._process.exitcode)
                 monitors.append(monitor)
             self._monitors = monitors
         return monitors

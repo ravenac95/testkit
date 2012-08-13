@@ -74,8 +74,7 @@ class SomeOtherProcess(ProcessWrapper):
         return {'otherproc': 'world'}
 
     def run(self):
-        while True:
-            time.sleep(1.0)
+        time.sleep(10.0)
 
 
 def initial_options():
