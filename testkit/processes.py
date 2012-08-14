@@ -13,6 +13,7 @@ errors between the processees. A test has four stages:
 import multiprocessing
 import Queue
 import time
+import gc
 import inspect
 from functools import wraps, partial
 from .exceptionutils import PicklableExceptionInfo
@@ -200,20 +201,17 @@ class ProcessManager(object):
         monitors = self._monitors
         if monitors is None:
             monitors = []
+            # Instantiate all the wrapper classes
             for wrapper_cls in self._wrappers:
                 monitor = ProcessMonitor.new_process(wrapper_cls,
                     self._initial_options, timeout=self._timeout)
-                print "%s ALIVE TO START? %s" % (monitor.name, monitor.is_alive())
-                time.sleep(0.25)
-                print "%s ALIVE NOW? %s %s" % (monitor.name, monitor.is_alive(),
-                        monitor._process.exitcode)
                 monitors.append(monitor)
             self._monitors = monitors
         return monitors
 
     def run(self):
-        # Combine processes options into shared options
         try:
+            # Combine processes options into shared options
             shared_options = self._get_shared_options()
             self._check_processes_ok()
             # Send shared options to all processes
@@ -286,6 +284,14 @@ class ProcessManager(object):
         monitors = self.monitors
         for monitor in monitors:
             monitor.terminate()
+        del self._monitors
+
+        # Make it so monitors will return nothing
+        self._monitors = 'empty'
+
+        # Force garbage collection. This seems to prevent segfaults of the
+        # multiprocesses
+        gc.collect()
 
 
 def create_main_process_wrapper(f, args, kwargs):
