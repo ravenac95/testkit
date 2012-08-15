@@ -233,8 +233,9 @@ class ProcessManager(object):
         for monitor in monitors:
             if not monitor.is_alive():
                 monitor.check_for_exceptions()
-                raise ProcessManagerError('Process "%s" has died prematurely' %
-                        monitor.name)
+                raise ProcessManagerError('Process "%s" has died prematurely '
+                         'with exit code "%d"' % (monitor.name, 
+                         monitor.exitcode))
 
     def _get_shared_options(self):
         monitors = self.monitors
